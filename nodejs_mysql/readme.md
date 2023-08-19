@@ -38,5 +38,5 @@ docker build . -t node-web-app
 docker tag node-web-app localhost:5000/node-web-app
 docker push localhost:5000/node-web-app
 kubectl rollout restart deployment node-web-app
-kubectl get pods
+kubectl get pods -w -l app="web-app"
 ```

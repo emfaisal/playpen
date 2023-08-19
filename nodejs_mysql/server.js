@@ -26,11 +26,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, HOST, () => {
   console.log(`Running on http://${HOST}:${PORT}`);
 });
-
-/*
-docker build . -t node-web-app
-docker tag node-web-app localhost:5000/node-web-app
-docker push localhost:5000/node-web-app
-kubectl rollout restart deployment node-web-app
-kubectl get pods
-*/

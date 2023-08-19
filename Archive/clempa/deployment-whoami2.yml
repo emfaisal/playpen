@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami2 # Name of the deployment
+  namespace: efaisal # Name of the namespace
+  labels:
+    app: whoami2 # Name of your application
+spec:
+  selector:
+    matchLabels:
+      app: whoami2 # Name of your application
+  replicas: 1 # Number of replicas
+  template:
+    metadata:
+      labels:
+        app: whoami2 # Name of your application
+    spec:
+      containers:
+      # Containers are the individual pieces of your application that you want
+      # to run.
+      - name: whoami280 # Name of the container
+        image: traefik/whoami:latest # The image you want to run
+        ports:
+        - containerPort: 80 # The port that your application uses
+        env:
+        - name: WHOAMI_PORT_NUMBER
+          value: "80"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  whoami2
+  namespace: efaisal
+spec:
+  selector:
+    app:  whoami2
+  type:  ClusterIP
+  ports:
+  - name:  http280
+    port:  80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whoami2-ingress # Name of the ingress object
+  namespace: efaisal # Name of the namespace
+spec:
+  rules:
+  - host: "whoami2.efaisal.localhost"  # Your hostname
+    http:
+      paths:
+      # Path-based routing settings:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: whoami2  # The name of the service
+            port:
+              number: 80  # Service Portnumber

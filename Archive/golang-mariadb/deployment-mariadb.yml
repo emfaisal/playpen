@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb # Name of the deployment
+  namespace: golang # Name of the namespace
+  labels:
+    app: mariadb # Name of your application
+spec:
+  selector:
+    matchLabels:
+      app: mariadb # Name of your application
+  replicas: 1 # Number of replicas
+  template:
+    metadata:
+      labels:
+        app: mariadb # Name of your application
+    spec:
+      containers:
+      # Containers are the individual pieces of your application that you want
+      # to run.
+      - name: mariadb # Name of the container
+        image: mariadb:10-focal # The image you want to run
+        ports:
+        - containerPort: 3306 # The port that your application uses
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"
+        env:
+        - name: MARIADB_ALLOW_EMPTY_ROOT_PASSWORD
+          value: "True"
+        - name: MYSQL_DATABASE
+          value: "example"
+

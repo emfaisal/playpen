@@ -1,0 +1,72 @@
+# Setup Periksa local development
+Steps:
+1. Create docker-compose.yml as follow:
+   ```
+   version: "3.3"
+   
+   services:
+     traefik:
+       container_name: traefik
+       image: "traefik:2.10"
+       command:
+         - --entrypoints.web.address=:80
+         - --entrypoints.websecure.address=:443
+         - --providers.docker
+         - --log.level=ERROR
+         - --api.insecure=true
+         # - --certificatesresolvers.leresolver.acme.httpchallenge=true
+         # - --certificatesresolvers.leresolver.acme.email=your-email #Set your email address here, is for the generation of SSL certificates with Let's Encrypt. 
+         # - --certificatesresolvers.leresolver.acme.storage=./acme.json
+         # - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
+       ports:
+         - "80:80"
+         - "443:443"
+         - "8080:8080"
+       volumes:
+         - "/var/run/docker.sock:/var/run/docker.sock:ro"
+         # - "./acme.json:/acme.json"
+       labels:
+         - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+         - "traefik.http.routers.http-catchall.entrypoints=web"
+         - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+         - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+   
+     portainer:
+       image: portainer/portainer-ce:2.18.4-alpine
+       command: -H unix:///var/run/docker.sock
+       restart: always
+       volumes:
+         - /var/run/docker.sock:/var/run/docker.sock
+         - portainer_data:/data
+       labels:
+         - "traefik.enable=true"
+         # Frontend
+         - "traefik.http.routers.frontend.rule=Host(`portainer.localhost`)"
+         - "traefik.http.routers.frontend.entrypoints=websecure"
+         - "traefik.http.routers.frontend.service=frontend"
+         - "traefik.http.routers.frontend.tls.certresolver=leresolver"
+         - "traefik.http.services.frontend.loadbalancer.server.port=9000"
+   
+         # Edge
+         - "traefik.http.routers.edge.rule=Host(`edge.localhost`)"
+         - "traefik.http.routers.edge.entrypoints=websecure"
+         - "traefik.http.routers.edge.service=edge"
+         - "traefik.http.routers.edge.tls.certresolver=leresolver"
+         - "traefik.http.services.edge.loadbalancer.server.port=8000"
+   
+     test:
+       image: traefik/whoami
+       labels:
+         - "traefik.http.routers.test.rule=Host(`test.localhost`)"
+         - "traefik.http.routers.test.entrypoints=websecure"
+         - "traefik.http.routers.test.service=test"
+         - "traefik.http.routers.test.tls.certresolver=leresolver"
+         - "traefik.http.services.test.loadbalancer.server.port=80"
+   
+   volumes:
+     portainer_data:
+   ```
+
+2. Start the environment `docker compose up -d`. Once started, it will create at least 2 service that can be accessed:
+   - portainer - https://portainer.localhost
+   - traefik - http://traefik.localhost:8080

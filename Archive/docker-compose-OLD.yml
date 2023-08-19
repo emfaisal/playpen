@@ -1,0 +1,30 @@
+version: '3'
+services:
+
+  portainer:
+    image: portainer/portainer-ce:2.18.4-alpine
+    container_name: portainer
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 8000:8000
+      - 9443:9443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+
+  traefik:
+    image: traefik:2.10
+    container_name: traefik
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - /var/run/docker.sock:/var/run/docker.sock
+
+volumes:
+  portainer_data:
+    driver: local

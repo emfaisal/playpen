@@ -1,0 +1,17 @@
+version: "3.3"
+
+services:
+  test2:
+    image: traefik/whoami
+    networks:
+      - devenv_default
+    labels:
+      - "traefik.http.routers.test2.rule=Host(`test2.localhost`)"
+      - "traefik.http.routers.test2.entrypoints=websecure"
+      - "traefik.http.routers.test2.service=test2"
+      - "traefik.http.routers.test2.tls.certresolver=leresolver"
+      - "traefik.http.services.test2.loadbalancer.server.port=80"
+
+networks:
+  devenv_default:
+    external: true

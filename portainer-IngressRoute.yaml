@@ -1,0 +1,44 @@
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: portainer-ingress # Name of the ingress object
+#   namespace: portainer # Name of the namespace
+# spec:
+#   rules:
+#   - host: "portainer.localhost"  # Your hostname
+#     http:
+#       paths:
+#       # Path-based routing settings:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: portainer  # The name of the service
+#             port:
+#               number: 9443  # Service Portnumber
+---
+apiVersion: traefik.io/v1alpha1
+kind: ServersTransport
+metadata:
+  name: portainer-transport
+  namespace: portainer
+spec:
+  serverName: portainer
+  insecureSkipVerify: true
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: portainer
+  name: portainer
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`portainer.localhost`)
+      kind: Rule
+      services:
+        - name: portainer
+          kind: Service
+          port: 9443
+          serversTransport: portainer-transport

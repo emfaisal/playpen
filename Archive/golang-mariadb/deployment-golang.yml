@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golang # Name of the deployment
+  namespace: golang # Name of the namespace
+  labels:
+    app: golang # Name of your application
+spec:
+  selector:
+    matchLabels:
+      app: golang # Name of your application
+  replicas: 1 # Number of replicas
+  template:
+    metadata:
+      labels:
+        app: golang # Name of your application
+    spec:
+      containers:
+      # Containers are the individual pieces of your application that you want
+      # to run.
+      - name: golang # Name of the container
+        image: golang # The image you want to run
+        ports:
+        - containerPort: 8000 # The port that your application uses
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  golang
+  namespace: golang
+spec:
+  selector:
+    app:  golang
+  type:  ClusterIP
+  ports:
+  - name:  http8000
+    port:  8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: golang-ingress # Name of the ingress object
+  namespace: golang # Name of the namespace
+spec:
+  rules:
+  - host: "golang.golang.localhost"  # Your hostname
+    http:
+      paths:
+      # Path-based routing settings:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: golang  # The name of the service
+            port:
+              number: 80  # Service Portnumber

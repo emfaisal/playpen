@@ -1,5 +1,11 @@
 # Development environment in kubernetes (tested in docker-desktop)
 
+## Overview
+Once all has been executed, these links will be available:
+- Traefik dashboard, http://traefik.localhost/dashboard/
+- Kubernetes dashboard, https://kubernetes.localhost/
+- Portainer dashboard, http://portainer.localhost/
+
 ## Setup
 
 ### Traefik
@@ -137,7 +143,7 @@ The token for the dashboard can be generated with `kubectl get secret admin-user
    helm.exe install portainer portainer/portainer --set service.type=ClusterIP
    kubectl apply -f portainer-IngressRoute.yaml
    ```
-3. Please allow 1-2 minutes for storage creation, before portainer be available at http://portainer.localhost.
+3. Please allow 1-2 minutes for storage creation, before portainer be available at http://portainer.localhost/.
 
 ## Using Development Environment
 Conventions:

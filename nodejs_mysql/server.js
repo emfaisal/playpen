@@ -19,7 +19,7 @@ app.get('/', (req, res) => {
   con.connect(function(err) {
     if (err) throw err;
     console.log("Connected!");
-    res.send('Hello World\n' + con.connect);
+    res.send('Hello World');
   });
 });
 

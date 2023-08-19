@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-web-app # Name of the deployment
+  namespace: mariadb # Name of the namespace
+  labels:
+    app: node-web-app # Name of your application
+spec:
+  selector:
+    matchLabels:
+      app: web-app # Name of your application
+  replicas: 1 # Number of replicas
+  template:
+    metadata:
+      labels:
+        app: web-app # Name of your application
+    spec:
+      containers:
+      # Containers are the individual pieces of your application that you want
+      # to run.
+      - name: node-web-app # Name of the container
+        image: localhost:5000/node-web-app # The image you want to run
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8080 # The port that your application uses
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"

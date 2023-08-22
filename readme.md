@@ -6,6 +6,14 @@ Once all has been executed, these links will be available:
 - Kubernetes dashboard, https://kubernetes.localhost/
 - Portainer dashboard, http://portainer.localhost/
 
+To perform this installation, run the following preparation work:
+```bash
+helm repo add traefik https://traefik.github.io/charts
+helm repo add portainer https://portainer.github.io/k8s/
+helm repo list
+helm repo update
+```
+
 ## Setup
 
 ### Traefik
@@ -28,10 +36,9 @@ Once all has been executed, these links will be available:
    ```
 2. Install traefik
    ```bash
-   helm.exe repo add traefik https://traefik.github.io/charts
    kubectl create namespace traefik
    kubectl config set-context --current --namespace=traefik
-   helm.exe install traefik traefik/traefik
+   helm install traefik traefik/traefik
    kubectl apply -f traefik-IngressRoute.yaml
    ```
 3. Traefik dashboard will be available in http://traefik.localhost/dashboard/.
@@ -140,7 +147,7 @@ The token for the dashboard can be generated with `kubectl get secret admin-user
    ```bash
    kubectl create namespace portainer
    kubectl config set-context --current --namespace=portainer
-   helm.exe install portainer portainer/portainer --set service.type=ClusterIP
+   helm install portainer portainer/portainer --set service.type=ClusterIP
    kubectl apply -f portainer-IngressRoute.yaml
    ```
 3. Please allow 1-2 minutes for storage creation, before portainer be available at http://portainer.localhost/.

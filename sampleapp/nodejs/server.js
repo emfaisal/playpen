@@ -4,23 +4,25 @@ const express = require('express');
 var mysql = require('mysql');
 
 var con = mysql.createConnection({
-  host: "mariadb.mariadb.svc.cluster.local",
+  host: "mariadb.sampleapp.svc.cluster.local",
   user: "root",
-  password: "DCtGLNjYzQ"
+  password: "7hdMw3K0hE"
 });
 
 // Constants
 const PORT = 8080;
 const HOST = '0.0.0.0';
 
+con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+});
+
+
 // App
 const app = express();
 app.get('/', (req, res) => {
-  con.connect(function(err) {
-    if (err) throw err;
-    console.log("Connected!");
-    res.send('Hello World');
-  });
+  res.send('Hello World');
 });
 
 app.listen(PORT, HOST, () => {

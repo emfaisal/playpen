@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: node-web-app # Name of the deployment
-  namespace: mariadb # Name of the namespace
+  name: sampleapp-nodejs # Name of the deployment
+  namespace: sampleapp # Name of the namespace
   labels:
-    app: node-web-app # Name of your application
+    app: sampleapp-nodejs # Name of your application
 spec:
   selector:
     matchLabels:
-      app: web-app # Name of your application
+      app: sampleapp-nodejs # Name of your application
   replicas: 1 # Number of replicas
   template:
     metadata:
       labels:
-        app: web-app # Name of your application
+        app: sampleapp-nodejs # Name of your application
     spec:
       containers:
       # Containers are the individual pieces of your application that you want
       # to run.
-      - name: node-web-app # Name of the container
-        image: localhost:5000/node-web-app # The image you want to run
+      - name: sampleapp-nodejs # Name of the container
+        image: localhost:5000/sampleapp-nodejs # The image you want to run
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080 # The port that your application uses
@@ -34,11 +34,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name:  web-app
-  namespace: mariadb
+  name:  sampleapp-nodejs
+  namespace: sampleapp
 spec:
   selector:
-    app:  web-app
+    app:  sampleapp-nodejs
   type:  ClusterIP
   ports:
   - name:  http
@@ -47,8 +47,8 @@ spec:
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  namespace: mariadb
-  name: web-app
+  namespace: sampleapp
+  name: sampleapp-nodejs
 spec:
   entryPoints:
     - web
@@ -56,6 +56,6 @@ spec:
     - match: Host(`nodejs.localhost`)
       kind: Rule
       services:
-        - name: web-app
+        - name: sampleapp-nodejs
           kind: Service
           port: 8080

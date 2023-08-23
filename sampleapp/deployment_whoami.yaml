@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whoami # Name of the deployment
+  namespace: sampleapp # Name of the namespace
+  labels:
+    app: whoami # Name of your application
+spec:
+  selector:
+    matchLabels:
+      app: whoami # Name of your application
+  replicas: 1 # Number of replicas
+  template:
+    metadata:
+      labels:
+        app: whoami # Name of your application
+    spec:
+      containers:
+      # Containers are the individual pieces of your application that you want
+      # to run.
+      - name: whoami
+        image: traefik/whoami # The image you want to run
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80 # The port that your application uses
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: "1"
+          requests:
+            memory: 256Mi
+            cpu: "0.2"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name:  whoami
+  namespace: sampleapp
+spec:
+  selector:
+    app:  whoami
+  type:  ClusterIP
+  ports:
+  - name:  http
+    port:  80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: sampleapp
+  name: whoami
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`whoami.localhost`)
+      kind: Rule
+      services:
+        - name: whoami
+          kind: Service
+          port: 80

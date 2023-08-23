@@ -101,7 +101,7 @@ helm repo update
              serversTransport: kubernetes-dashboard-transport
    ```
 2. Apply it to the cluster
-   ```yaml
+   ```bash
    kubectl create namespace kubernetes-dashboard
    kubectl config set-context --current --namespace=kubernetes-dashboard
    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml

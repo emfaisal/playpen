@@ -1,108 +1,180 @@
 # General Configuration
 1. Setup new namespace "sampleapp"
-```bash
-kubectl create namespace sampleapp
-kubectl config set-context --current --namespace sampleapp
-```
+   ```bash
+   kubectl create namespace sampleapp
+   kubectl config set-context --current --namespace sampleapp
+   ```
 2. Install mariadb
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm install mariadb bitnami/mariadb
-```
+   ```bash
+   helm repo add bitnami https://charts.bitnami.com/bitnami
+   helm repo update
+   helm install mariadb bitnami/mariadb
+   ```
 3. Take note the host & username & password of mariadb
-```bash
-MYUSR=root
-MYPASS=$(kubectl get secret --namespace sampleapp mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d)
-MYHOST="mariadb.sampleapp.svc.cluster.local"
-```
-# Build & run the app
+   ```bash
+   MYUSR=root
+   MYPASS=$(kubectl get secret --namespace sampleapp mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d)
+   MYHOST="mariadb.sampleapp.svc.cluster.local"
+   ```
+# Build, Deploy & Update the app
+## traefik/whoami App
+Will be accesible on http://whoami.localhost, steps to deploy:
+1. Prepare `deployment-whoami.yaml`, as follow:
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: whoami # Name of the deployment
+     namespace: sampleapp # Name of the namespace
+     labels:
+       app: whoami # Name of your application
+   spec:
+     selector:
+       matchLabels:
+         app: whoami # Name of your application
+     replicas: 1 # Number of replicas
+     template:
+       metadata:
+         labels:
+           app: whoami # Name of your application
+       spec:
+         containers:
+         # Containers are the individual pieces of your application that you want
+         # to run.
+         - name: whoami
+           image: traefik/whoami # The image you want to run
+           imagePullPolicy: IfNotPresent
+           ports:
+           - containerPort: 80 # The port that your application uses
+           resources:
+             limits:
+               memory: 512Mi
+               cpu: "1"
+             requests:
+               memory: 256Mi
+               cpu: "0.2"
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name:  whoami
+     namespace: sampleapp
+   spec:
+     selector:
+       app:  whoami
+     type:  ClusterIP
+     ports:
+     - name:  http
+       port:  80
+   ---
+   apiVersion: traefik.io/v1alpha1
+   kind: IngressRoute
+   metadata:
+     namespace: sampleapp
+     name: whoami
+   spec:
+     entryPoints:
+       - web
+     routes:
+       - match: Host(`whoami.localhost`)
+         kind: Rule
+         services:
+           - name: whoami
+             kind: Service
+             port: 80
+   ```
+2. kjdhd
+   ```bash
+   kubectl apply -f deployment-whoami.yaml
+   ```
+## nodejs App
+Will be accesible on http://nodejs.localhost, steps to deploy:
 1. Start registry service locally
-```bash
-docker run -d -p 5000:5000 --restart always --name registry registry:2
-```
+   ```bash
+   docker run -d -p 5000:5000 --restart always --name registry registry:2
+   ```
 2. Initial build and deployment
-  - Prepare `deployment-nodejs.yaml`, as follow:
-    ```yaml
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: sampleapp-nodejs # Name of the deployment
-      namespace: sampleapp # Name of the namespace
-      labels:
-        app: sampleapp-nodejs # Name of your application
-    spec:
-      selector:
-        matchLabels:
-          app: sampleapp-nodejs # Name of your application
-      replicas: 1 # Number of replicas
-      template:
-        metadata:
-          labels:
-            app: sampleapp-nodejs # Name of your application
-        spec:
-          containers:
-          # Containers are the individual pieces of your application that you want
-          # to run.
-          - name: sampleapp-nodejs # Name of the container
-            image: localhost:5000/sampleapp-nodejs # The image you want to run
-            imagePullPolicy: IfNotPresent
-            ports:
-            - containerPort: 8080 # The port that your application uses
-            resources:
-              limits:
-                memory: 512Mi
-                cpu: "1"
-              requests:
-                memory: 256Mi
-                cpu: "0.2"
-    ---
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name:  sampleapp-nodejs
-      namespace: sampleapp
-    spec:
-      selector:
-        app:  sampleapp-nodejs
-      type:  ClusterIP
-      ports:
-      - name:  http
-        port:  8080
-    ---
-    apiVersion: traefik.io/v1alpha1
-    kind: IngressRoute
-    metadata:
-      namespace: sampleapp
-      name: sampleapp-nodejs
-    spec:
-      entryPoints:
-        - web
-      routes:
-        - match: Host(`nodejs.localhost`)
-          kind: Rule
-          services:
-            - name: sampleapp-nodejs
-              kind: Service
-              port: 8080
-    ```
-  - build and push the app to registry
-    ```bash
-    docker build -f Dockerfile-nodejs . -t localhost:5000/sampleapp-nodejs  -t sampleapp-nodejs
-    docker push localhost:5000/sampleapp-nodejs
-    ```
-  - Deploy the app
-    ```bash
-    kubectl apply -f deployment-nodejs.yaml
-    ```
-# Code update
-After every code changes: build, publish image, the rollout
-```bash
-docker build -f Dockerfile-nodejs . -t localhost:5000/sampleapp-nodejs  -t sampleapp-nodejs
-docker push localhost:5000/sampleapp-nodejs
-kubectl rollout restart deployment sampleapp-nodejs
-```
-The http://nodejs.localhost will be refreshed.
+   - Prepare `deployment-nodejs.yaml`, as follow:
+     ```yaml
+     apiVersion: apps/v1
+     kind: Deployment
+     metadata:
+       name: sampleapp-nodejs # Name of the deployment
+       namespace: sampleapp # Name of the namespace
+       labels:
+         app: sampleapp-nodejs # Name of your application
+     spec:
+       selector:
+         matchLabels:
+           app: sampleapp-nodejs # Name of your application
+       replicas: 1 # Number of replicas
+       template:
+         metadata:
+           labels:
+             app: sampleapp-nodejs # Name of your application
+         spec:
+           containers:
+           # Containers are the individual pieces of your application that you want
+           # to run.
+           - name: sampleapp-nodejs # Name of the container
+             image: localhost:5000/sampleapp-nodejs # The image you want to run
+             imagePullPolicy: IfNotPresent
+             ports:
+             - containerPort: 8080 # The port that your application uses
+             resources:
+               limits:
+                 memory: 512Mi
+                 cpu: "1"
+               requests:
+                 memory: 256Mi
+                 cpu: "0.2"
+     ---
+     apiVersion: v1
+     kind: Service
+     metadata:
+       name:  sampleapp-nodejs
+       namespace: sampleapp
+     spec:
+       selector:
+         app:  sampleapp-nodejs
+       type:  ClusterIP
+       ports:
+       - name:  http
+         port:  8080
+     ---
+     apiVersion: traefik.io/v1alpha1
+     kind: IngressRoute
+     metadata:
+       namespace: sampleapp
+       name: sampleapp-nodejs
+     spec:
+       entryPoints:
+         - web
+       routes:
+         - match: Host(`nodejs.localhost`)
+           kind: Rule
+           services:
+             - name: sampleapp-nodejs
+               kind: Service
+               port: 8080
+     ```
+   - build and push the app to registry
+     ```bash
+     docker build -f Dockerfile-nodejs . -t localhost:5000/sampleapp-nodejs  -t sampleapp-nodejs
+     docker push localhost:5000/sampleapp-nodejs
+     ```
+   - Deploy the app
+     ```bash
+     kubectl apply -f deployment-nodejs.yaml
+     ```
+  3. Code update
+     After every code changes: build, publish image, the rollout
+     ```bash
+     docker build -f Dockerfile-nodejs . -t localhost:5000/sampleapp-nodejs  -t sampleapp-nodejs
+     docker push localhost:5000/sampleapp-nodejs
+     kubectl rollout restart deployment sampleapp-nodejs
+     ```
+
 <!-- ```text
 Tip:
 

@@ -53,7 +53,7 @@ spec:
   entryPoints:
     - web
   routes:
-    - match: Host(`whoami.localhost`)
+    - match: Host(`whoami.localhost`) && (PathPrefix(`/path1`) || PathPrefix(`/path2`))
       kind: Rule
       services:
         - name: whoami

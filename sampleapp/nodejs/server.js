@@ -1,9 +1,17 @@
 'use strict';
 
 const express = require('express');
+const cors = require('cors');
 const mysql = require('mysql');
 
 const app = express();
+
+// Disable CORS
+app.use(cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST'],
+  allowHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Connect to MariaDB database
 const connection = mysql.createConnection({
@@ -20,14 +28,14 @@ connection.connect((err) => {
   }
 
   // Create a route that responds with "hello world" in JSON format
-  app.get('/', (req, res) => {
+  app.get('/api/v1/hello-world', (req, res) => {
     res.json({
-      message: 'hello world'
+      message: 'hello world - /api/v1/hello-world'
     });
   });
 
   // Start the server
   app.listen(8080, () => {
-    console.log('Server started on port 3000');
+    console.log('Server started on port 8080');
   });
 });

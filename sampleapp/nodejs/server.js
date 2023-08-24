@@ -1,30 +1,33 @@
 'use strict';
 
 const express = require('express');
-var mysql = require('mysql');
+const mysql = require('mysql');
 
-var con = mysql.createConnection({
-  host: "mariadb.sampleapp.svc.cluster.local",
-  user: "root",
-  password: "7hdMw3K0hE"
-});
-
-// Constants
-const PORT = 8080;
-const HOST = '0.0.0.0';
-
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
-
-
-// App
 const app = express();
-app.get('/', (req, res) => {
-  res.send('Hello World');
+
+// Connect to MariaDB database
+const connection = mysql.createConnection({
+  host: 'mariadb.sampleapp.svc.cluster.local',
+  user: 'root',
+  password: '7hdMw3K0hE',
+  database: 'mysql'
 });
 
-app.listen(PORT, HOST, () => {
-  console.log(`Running on http://${HOST}:${PORT}`);
+connection.connect((err) => {
+  if (err) {
+    console.log(err);
+    process.exit();
+  }
+
+  // Create a route that responds with "hello world" in JSON format
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'hello world'
+    });
+  });
+
+  // Start the server
+  app.listen(8080, () => {
+    console.log('Server started on port 3000');
+  });
 });

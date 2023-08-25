@@ -16,33 +16,40 @@ spec:
         app: sampleapp-js # Name of your application
     spec:
       containers:
-      # Containers are the individual pieces of your application that you want
-      # to run.
-      - name: sampleapp-js # Name of the container
-        image: localhost:5000/sampleapp-js # The image you want to run
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 80 # The port that your application uses
-        resources:
-          limits:
-            memory: 512Mi
-            cpu: "1"
-          requests:
-            memory: 256Mi
-            cpu: "0.2"
+        # Containers are the individual pieces of your application that you want
+        # to run.
+        - name: sampleapp-js # Name of the container
+          image: localhost:5000/sampleapp-js # The image you want to run
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80 # The port that your application uses
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              memory: 256Mi
+              cpu: "0.2"
+          volumeMounts:
+          - name: my-volume
+            mountPath: /mnt
+      volumes:
+        - name: my-volume
+          persistentVolumeClaim:
+            claimName: my-pvc
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name:  sampleapp-js
+  name: sampleapp-js
   namespace: sampleapp
 spec:
   selector:
-    app:  sampleapp-js
-  type:  ClusterIP
+    app: sampleapp-js
+  type: ClusterIP
   ports:
-  - name:  http
-    port:  80
+    - name: http
+      port: 80
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute

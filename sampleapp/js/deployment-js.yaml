@@ -31,8 +31,8 @@ spec:
               memory: 256Mi
               cpu: "0.2"
           volumeMounts:
-          - name: my-volume
-            mountPath: /mnt
+            - name: my-volume
+              mountPath: /mnt
       volumes:
         - name: my-volume
           persistentVolumeClaim:

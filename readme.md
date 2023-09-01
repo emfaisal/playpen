@@ -2,7 +2,7 @@
 
 ## Overview
 Once all has been executed, these links will be available:
-- Traefik dashboard, http://traefik.localhost/dashboard/
+- Traefik dashboard, http://localhost:9000/dashboard/
 - Kubernetes dashboard, https://kubernetes.localhost/
 - Portainer dashboard, http://portainer.localhost/
 
@@ -17,31 +17,32 @@ helm repo update
 ## Setup
 
 ### Traefik
-1. Prepare file `traefik-IngressRoute.yaml` with the following content: 
+1. Prepare file `traefik-values.yaml` with the following content: 
    ```yaml
-   apiVersion: traefik.io/v1alpha1
-   kind: IngressRoute
-   metadata:
-     namespace: traefik
-     name: dashboard
-   spec:
-     entryPoints:
-       - web
-     routes:
-       - match: Host(`traefik.localhost`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))
-         kind: Rule
-         services:
-           - name: api@internal
-             kind: TraefikService
+   ports:
+     traefik:
+       port: 9000
+       expose: true
+       exposedPort: 9000
+       protocol: TCP
+     metrics:
+       port: 9100
+       expose: true
+       exposedPort: 9100
+       protocol: TCP
+     mariadb:
+       port: 3306
+       expose: true
+       exposedPort: 3306
+       protocol: TCP
    ```
 2. Install traefik
    ```bash
    kubectl create namespace traefik
    kubectl config set-context --current --namespace=traefik
-   helm install traefik traefik/traefik
-   kubectl apply -f traefik-IngressRoute.yaml
+   helm install traefik traefik/traefik --values traefik-values.yaml
    ```
-3. Traefik dashboard will be available in http://traefik.localhost/dashboard/.
+3. Traefik dashboard will be available in http://localhost:9000/dashboard/.
 
 ### Kubernetes Dashboard
 1. Prepare manifest `dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml` with the following content:
@@ -151,6 +152,66 @@ The token for the dashboard can be generated with `kubectl get secret admin-user
    kubectl apply -f portainer-IngressRoute.yaml
    ```
 3. Please allow 1-2 minutes for storage creation, before portainer be available at http://portainer.localhost/.
+
+### MariaDB
+1. Prepare ingress file `mariadb-IngressRoute.yaml` as follow:
+   ```yaml
+   apiVersion: traefik.io/v1alpha1
+   kind: IngressRouteTCP
+   metadata:
+     namespace: database
+     name: mariadb
+   spec:
+     entryPoints:
+       - mariadb
+     routes:
+       - match: HostSNI(`*`)
+         services:
+           - name: mariadb
+             port: 3306
+   ```
+2. Install MariaDB
+   ```bash
+   kubectl create namespace database
+   kubectl config set-context --current --namespace=database
+   helm repo add bitnami https://charts.bitnami.com/bitnami
+   helm repo update
+   helm install mariadb bitnami/mariadb
+   ```
+
+<!--    
+** Please be patient while the chart is being deployed **
+
+Tip:
+
+  Watch the deployment status using the command: kubectl get pods -w --namespace database -l app.kubernetes.io/instance=mariadb
+
+Services:
+
+  echo Primary: mariadb.database.svc.cluster.local:3306
+
+Administrator credentials:
+
+  Username: root
+  Password : $(kubectl get secret --namespace database mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d)
+
+To connect to your database:
+
+  1. Run a pod that you can use as a client:
+
+      kubectl run mariadb-client --rm --tty -i --restart='Never' --image  docker.io/bitnami/mariadb:11.0.3-debian-11-r5 --namespace database --command -- bash
+
+  2. To connect to primary service (read/write):
+
+      mysql -h mariadb.database.svc.cluster.local -uroot -p my_database
+
+To upgrade this helm chart:
+
+  1. Obtain the password as described on the 'Administrator credentials' section and set the 'auth.rootPassword' parameter as shown below:
+
+      ROOT_PASSWORD=$(kubectl get secret --namespace database mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d)
+      helm upgrade --namespace database mariadb oci://registry-1.docker.io/bitnamicharts/mariadb --set auth.rootPassword=$ROOT_PASSWORD
+ -->
 
 ## Using Development Environment
 Conventions:

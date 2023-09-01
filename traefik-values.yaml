@@ -1,0 +1,18 @@
+# https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml
+
+ports:
+  traefik:
+    port: 9000
+    expose: true
+    exposedPort: 9000
+    protocol: TCP
+  metrics:
+    port: 9100
+    expose: true
+    exposedPort: 9100
+    protocol: TCP
+  mariadb:
+    port: 3306
+    expose: true
+    exposedPort: 3306
+    protocol: TCP

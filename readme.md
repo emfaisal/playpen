@@ -177,6 +177,10 @@ The token for the dashboard can be generated with `kubectl get secret admin-user
    helm repo add bitnami https://charts.bitnami.com/bitnami
    helm repo update
    helm install mariadb bitnami/mariadb
+   DBUSER=root
+   DBPASS=$(kubectl get secret --namespace database mariadb -o jsonpath="{.data.mariadb-root-password}" | base64 -d)
+   DBIP=$(ip route get 8.8.8.8 | egrep -o "src\s[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\s" | awk '{print $2}')
+   mariadb my_database --host=$DBIP --user=$DBUSER --password=$DBPASS
    ```
 
 <!--    

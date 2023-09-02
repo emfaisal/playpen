@@ -9,6 +9,7 @@ Once all has been executed, these links will be available:
 To perform this installation, run the following preparation work:
 ```bash
 helm repo add traefik https://traefik.github.io/charts
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 helm repo add portainer https://portainer.github.io/k8s/
 helm repo list
 helm repo update
@@ -45,7 +46,7 @@ helm repo update
 3. Traefik dashboard will be available in http://localhost:9000/dashboard/.
 
 ### Kubernetes Dashboard
-1. Prepare manifest `dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml` with the following content:
+1. Prepare manifest `kubernetes-dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml` with the following content:
    ```yaml
    apiVersion: v1
    kind: ServiceAccount
@@ -105,8 +106,10 @@ helm repo update
    ```bash
    kubectl create namespace kubernetes-dashboard
    kubectl config set-context --current --namespace=kubernetes-dashboard
-   kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-   kubectl apply -f dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml
+   helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard \
+     --set=nginx.enabled=false --set=cert-manager.enabled=false \
+     --set=app.ingress.enabled=false
+   kubectl apply -f kubernetes-dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml
    kubectl create token admin-user
    ```
 
@@ -218,6 +221,7 @@ To upgrade this helm chart:
  -->
 
 ## Using Development Environment
+### Overview
 Conventions:
 - Shared namespaces (`traefik` & `portainer`) is shared among developer
 - Each developer uses his/her own name as namespace.
@@ -227,3 +231,7 @@ Conventions:
 - Prepare deploymeny file `deployment-nginx.yml`, as follow:
   ```yaml
   ```
+### Helm Charts
+Source: https://phoenixnap.com/kb/create-helm-chart
+```bash
+```

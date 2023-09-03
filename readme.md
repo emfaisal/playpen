@@ -112,11 +112,10 @@ helm repo update
    kubectl apply -f kubernetes-dashboard-ServiceAccount_ClusterRoleBinding_Secret.yaml
    kubectl create token admin-user
    ```
-
-The token for the dashboard can be generated with `kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d`, when prompted via as follow:
-- https://kubernetes.localhost
-- http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/, after you run `kubectl proxy`
-- https://localhost:8443/dashboard/, after you run `kubectl -n kubernetes-dashboard port-forward pods/kubernetes-dashboard-6967859bff-lw6p5 8443:8443`
+3. Run the following command to get the token, to access https://kubernetes.localhost:
+   ```bash
+   kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
+   ```
 
 ### Portainer
 1. Prepare ingress file `portainer-IngressRoute.yaml` as follow:
